@@ -17,15 +17,15 @@
 
 		<column name="companyId" type="long" />
 		<column name="userId" type="long" />
-		<column name="userName" type="String" />
+		<column name="userName" type="String" uad-anonymize-field-name="fullName" />
 		<column name="createDate" type="Date" />
 		<column name="modifiedDate" type="Date" />
 
 		<!-- Other fields -->
 
 		<column localized="true" name="name" type="String" />
-		<column name="description" type="String" />
-		<column name="data" type="String" uad-nonanonymizable="true"/>
+		<column name="description" type="String" uad-nonanonymizable="true" />
+		<column name="data" type="String" uad-nonanonymizable="true" />
 
 		<!-- Finder methods -->
 
@@ -35,7 +35,7 @@
 		<finder name="CompanyId" return-type="Collection">
 			<finder-column name="companyId" />
 		</finder>
-
+		
 		<!-- References -->
 
 		<reference entity="User" package-path="com.liferay.portal" />
@@ -165,9 +165,9 @@
 
 		<column name="companyId" type="long" />
 		<column name="userId" type="long" />
-		<column name="userName" type="String" uad-anonymize-field-name="fullName"/>
+		<column name="userName" type="String"/>
 		<column name="versionUserId" type="long" />
-		<column name="versionUserName" type="String" uad-anonymize-field-name="fullName"/>
+		<column name="versionUserName" type="String"/>
 		<column name="createDate" type="Date" />
 		<column name="modifiedDate" type="Date" />
 
@@ -194,6 +194,9 @@
 		<finder name="F_F" return-type="Collection">
 			<finder-column name="formInstanceId" />
 			<finder-column name="formInstanceVersion" />
+		</finder>
+		<finder name="StorageId" return-type="DDMFormInstanceRecord">
+			<finder-column name="storageId" />
 		</finder>
 
 		<!-- References -->
