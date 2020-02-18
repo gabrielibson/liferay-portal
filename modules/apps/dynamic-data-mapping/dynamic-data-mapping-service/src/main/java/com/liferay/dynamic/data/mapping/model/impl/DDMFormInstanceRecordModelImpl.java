@@ -133,11 +133,13 @@ public class DDMFormInstanceRecordModelImpl
 
 	public static final long GROUPID_COLUMN_BITMASK = 8L;
 
-	public static final long USERID_COLUMN_BITMASK = 16L;
+	public static final long STORAGEID_COLUMN_BITMASK = 16L;
 
-	public static final long UUID_COLUMN_BITMASK = 32L;
+	public static final long USERID_COLUMN_BITMASK = 32L;
 
-	public static final long FORMINSTANCERECORDID_COLUMN_BITMASK = 64L;
+	public static final long UUID_COLUMN_BITMASK = 64L;
+
+	public static final long FORMINSTANCERECORDID_COLUMN_BITMASK = 128L;
 
 	public static void setEntityCacheEnabled(boolean entityCacheEnabled) {
 		_entityCacheEnabled = entityCacheEnabled;
@@ -718,7 +720,19 @@ public class DDMFormInstanceRecordModelImpl
 
 	@Override
 	public void setStorageId(long storageId) {
+		_columnBitmask |= STORAGEID_COLUMN_BITMASK;
+
+		if (!_setOriginalStorageId) {
+			_setOriginalStorageId = true;
+
+			_originalStorageId = _storageId;
+		}
+
 		_storageId = storageId;
+	}
+
+	public long getOriginalStorageId() {
+		return _originalStorageId;
 	}
 
 	@JSON
@@ -900,6 +914,11 @@ public class DDMFormInstanceRecordModelImpl
 
 		ddmFormInstanceRecordModelImpl._originalFormInstanceVersion =
 			ddmFormInstanceRecordModelImpl._formInstanceVersion;
+
+		ddmFormInstanceRecordModelImpl._originalStorageId =
+			ddmFormInstanceRecordModelImpl._storageId;
+
+		ddmFormInstanceRecordModelImpl._setOriginalStorageId = false;
 
 		ddmFormInstanceRecordModelImpl._columnBitmask = 0;
 	}
@@ -1103,6 +1122,8 @@ public class DDMFormInstanceRecordModelImpl
 	private String _formInstanceVersion;
 	private String _originalFormInstanceVersion;
 	private long _storageId;
+	private long _originalStorageId;
+	private boolean _setOriginalStorageId;
 	private String _version;
 	private Date _lastPublishDate;
 	private long _columnBitmask;

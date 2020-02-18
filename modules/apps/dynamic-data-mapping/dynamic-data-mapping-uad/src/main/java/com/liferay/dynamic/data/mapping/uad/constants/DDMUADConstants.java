@@ -22,7 +22,4 @@ public class DDMUADConstants {
 
 	public static final String[] USER_ID_FIELD_NAMES_DDM_CONTENT = {"userId"};
 
-	public static final String[] USER_ID_FIELD_NAMES_DDM_FORM_INSTANCE_RECORD =
-		{"userId", "versionUserId"};
-
 }

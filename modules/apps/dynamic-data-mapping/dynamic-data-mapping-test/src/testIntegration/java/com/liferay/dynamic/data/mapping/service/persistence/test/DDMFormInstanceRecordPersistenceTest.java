@@ -281,6 +281,13 @@ public class DDMFormInstanceRecordPersistenceTest {
 	}
 
 	@Test
+	public void testCountByStorageId() throws Exception {
+		_persistence.countByStorageId(RandomTestUtil.nextLong());
+
+		_persistence.countByStorageId(0L);
+	}
+
+	@Test
 	public void testFindByPrimaryKeyExisting() throws Exception {
 		DDMFormInstanceRecord newDDMFormInstanceRecord =
 			addDDMFormInstanceRecord();
@@ -573,6 +580,12 @@ public class DDMFormInstanceRecordPersistenceTest {
 			Long.valueOf(existingDDMFormInstanceRecord.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
 				existingDDMFormInstanceRecord, "getOriginalGroupId",
+				new Class<?>[0]));
+
+		Assert.assertEquals(
+			Long.valueOf(existingDDMFormInstanceRecord.getStorageId()),
+			ReflectionTestUtil.<Long>invoke(
+				existingDDMFormInstanceRecord, "getOriginalStorageId",
 				new Class<?>[0]));
 	}
 

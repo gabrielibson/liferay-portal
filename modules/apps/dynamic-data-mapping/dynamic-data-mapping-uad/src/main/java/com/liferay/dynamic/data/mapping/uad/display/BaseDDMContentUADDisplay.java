@@ -50,7 +50,7 @@ public abstract class BaseDDMContentUADDisplay
 
 	@Override
 	public String[] getDisplayFieldNames() {
-		return new String[] {"data"};
+		return new String[] {"description", "data"};
 	}
 
 	@Override

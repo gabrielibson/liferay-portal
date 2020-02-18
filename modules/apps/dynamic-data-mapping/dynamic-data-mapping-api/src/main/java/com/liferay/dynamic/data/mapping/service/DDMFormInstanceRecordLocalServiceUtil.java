@@ -258,6 +258,13 @@ public class DDMFormInstanceRecordLocalServiceUtil {
 		return getService().fetchFormInstanceRecord(ddmFormInstanceRecordId);
 	}
 
+	public static com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord
+			fetchFormInstanceRecordByStorageId(long storageId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().fetchFormInstanceRecordByStorageId(storageId);
+	}
+
 	public static com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery
 		getActionableDynamicQuery() {
 
