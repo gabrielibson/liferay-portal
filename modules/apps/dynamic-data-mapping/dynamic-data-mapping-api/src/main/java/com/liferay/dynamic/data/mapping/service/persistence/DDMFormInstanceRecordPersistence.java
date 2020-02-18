@@ -989,6 +989,51 @@ public interface DDMFormInstanceRecordPersistence
 	public int countByF_F(long formInstanceId, String formInstanceVersion);
 
 	/**
+	 * Returns the ddm form instance record where storageId = &#63; or throws a <code>NoSuchFormInstanceRecordException</code> if it could not be found.
+	 *
+	 * @param storageId the storage ID
+	 * @return the matching ddm form instance record
+	 * @throws NoSuchFormInstanceRecordException if a matching ddm form instance record could not be found
+	 */
+	public DDMFormInstanceRecord findByStorageId(long storageId)
+		throws NoSuchFormInstanceRecordException;
+
+	/**
+	 * Returns the ddm form instance record where storageId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
+	 *
+	 * @param storageId the storage ID
+	 * @return the matching ddm form instance record, or <code>null</code> if a matching ddm form instance record could not be found
+	 */
+	public DDMFormInstanceRecord fetchByStorageId(long storageId);
+
+	/**
+	 * Returns the ddm form instance record where storageId = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
+	 *
+	 * @param storageId the storage ID
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the matching ddm form instance record, or <code>null</code> if a matching ddm form instance record could not be found
+	 */
+	public DDMFormInstanceRecord fetchByStorageId(
+		long storageId, boolean useFinderCache);
+
+	/**
+	 * Removes the ddm form instance record where storageId = &#63; from the database.
+	 *
+	 * @param storageId the storage ID
+	 * @return the ddm form instance record that was removed
+	 */
+	public DDMFormInstanceRecord removeByStorageId(long storageId)
+		throws NoSuchFormInstanceRecordException;
+
+	/**
+	 * Returns the number of ddm form instance records where storageId = &#63;.
+	 *
+	 * @param storageId the storage ID
+	 * @return the number of matching ddm form instance records
+	 */
+	public int countByStorageId(long storageId);
+
+	/**
 	 * Caches the ddm form instance record in the entity cache if it is enabled.
 	 *
 	 * @param ddmFormInstanceRecord the ddm form instance record

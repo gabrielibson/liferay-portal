@@ -55,7 +55,7 @@ public abstract class BaseDDMContentUADExporter
 
 	@Override
 	protected String toXmlString(DDMContent ddmContent) {
-		StringBundler sb = new StringBundler(16);
+		StringBundler sb = new StringBundler(19);
 
 		sb.append("<model><model-name>");
 		sb.append("com.liferay.dynamic.data.mapping.model.DDMContent");
@@ -72,6 +72,10 @@ public abstract class BaseDDMContentUADExporter
 		sb.append(
 			"<column><column-name>userName</column-name><column-value><![CDATA[");
 		sb.append(ddmContent.getUserName());
+		sb.append("]]></column-value></column>");
+		sb.append(
+			"<column><column-name>description</column-name><column-value><![CDATA[");
+		sb.append(ddmContent.getDescription());
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>data</column-name><column-value><![CDATA[");

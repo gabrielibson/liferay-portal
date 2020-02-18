@@ -1297,6 +1297,66 @@ public class DDMFormInstanceRecordUtil {
 	}
 
 	/**
+	 * Returns the ddm form instance record where storageId = &#63; or throws a <code>NoSuchFormInstanceRecordException</code> if it could not be found.
+	 *
+	 * @param storageId the storage ID
+	 * @return the matching ddm form instance record
+	 * @throws NoSuchFormInstanceRecordException if a matching ddm form instance record could not be found
+	 */
+	public static DDMFormInstanceRecord findByStorageId(long storageId)
+		throws com.liferay.dynamic.data.mapping.exception.
+			NoSuchFormInstanceRecordException {
+
+		return getPersistence().findByStorageId(storageId);
+	}
+
+	/**
+	 * Returns the ddm form instance record where storageId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
+	 *
+	 * @param storageId the storage ID
+	 * @return the matching ddm form instance record, or <code>null</code> if a matching ddm form instance record could not be found
+	 */
+	public static DDMFormInstanceRecord fetchByStorageId(long storageId) {
+		return getPersistence().fetchByStorageId(storageId);
+	}
+
+	/**
+	 * Returns the ddm form instance record where storageId = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
+	 *
+	 * @param storageId the storage ID
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the matching ddm form instance record, or <code>null</code> if a matching ddm form instance record could not be found
+	 */
+	public static DDMFormInstanceRecord fetchByStorageId(
+		long storageId, boolean useFinderCache) {
+
+		return getPersistence().fetchByStorageId(storageId, useFinderCache);
+	}
+
+	/**
+	 * Removes the ddm form instance record where storageId = &#63; from the database.
+	 *
+	 * @param storageId the storage ID
+	 * @return the ddm form instance record that was removed
+	 */
+	public static DDMFormInstanceRecord removeByStorageId(long storageId)
+		throws com.liferay.dynamic.data.mapping.exception.
+			NoSuchFormInstanceRecordException {
+
+		return getPersistence().removeByStorageId(storageId);
+	}
+
+	/**
+	 * Returns the number of ddm form instance records where storageId = &#63;.
+	 *
+	 * @param storageId the storage ID
+	 * @return the number of matching ddm form instance records
+	 */
+	public static int countByStorageId(long storageId) {
+		return getPersistence().countByStorageId(storageId);
+	}
+
+	/**
 	 * Caches the ddm form instance record in the entity cache if it is enabled.
 	 *
 	 * @param ddmFormInstanceRecord the ddm form instance record

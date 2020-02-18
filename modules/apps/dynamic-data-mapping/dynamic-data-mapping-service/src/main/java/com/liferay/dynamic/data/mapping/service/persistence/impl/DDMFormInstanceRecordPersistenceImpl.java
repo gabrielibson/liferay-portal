@@ -40,6 +40,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 
@@ -47,6 +48,7 @@ import java.io.Serializable;
 
 import java.lang.reflect.InvocationHandler;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -3672,6 +3674,229 @@ public class DDMFormInstanceRecordPersistenceImpl
 	private static final String _FINDER_COLUMN_F_F_FORMINSTANCEVERSION_3 =
 		"(ddmFormInstanceRecord.formInstanceVersion IS NULL OR ddmFormInstanceRecord.formInstanceVersion = '')";
 
+	private FinderPath _finderPathFetchByStorageId;
+	private FinderPath _finderPathCountByStorageId;
+
+	/**
+	 * Returns the ddm form instance record where storageId = &#63; or throws a <code>NoSuchFormInstanceRecordException</code> if it could not be found.
+	 *
+	 * @param storageId the storage ID
+	 * @return the matching ddm form instance record
+	 * @throws NoSuchFormInstanceRecordException if a matching ddm form instance record could not be found
+	 */
+	@Override
+	public DDMFormInstanceRecord findByStorageId(long storageId)
+		throws NoSuchFormInstanceRecordException {
+
+		DDMFormInstanceRecord ddmFormInstanceRecord = fetchByStorageId(
+			storageId);
+
+		if (ddmFormInstanceRecord == null) {
+			StringBundler msg = new StringBundler(4);
+
+			msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+			msg.append("storageId=");
+			msg.append(storageId);
+
+			msg.append("}");
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(msg.toString());
+			}
+
+			throw new NoSuchFormInstanceRecordException(msg.toString());
+		}
+
+		return ddmFormInstanceRecord;
+	}
+
+	/**
+	 * Returns the ddm form instance record where storageId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
+	 *
+	 * @param storageId the storage ID
+	 * @return the matching ddm form instance record, or <code>null</code> if a matching ddm form instance record could not be found
+	 */
+	@Override
+	public DDMFormInstanceRecord fetchByStorageId(long storageId) {
+		return fetchByStorageId(storageId, true);
+	}
+
+	/**
+	 * Returns the ddm form instance record where storageId = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
+	 *
+	 * @param storageId the storage ID
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the matching ddm form instance record, or <code>null</code> if a matching ddm form instance record could not be found
+	 */
+	@Override
+	public DDMFormInstanceRecord fetchByStorageId(
+		long storageId, boolean useFinderCache) {
+
+		Object[] finderArgs = null;
+
+		if (useFinderCache) {
+			finderArgs = new Object[] {storageId};
+		}
+
+		Object result = null;
+
+		if (useFinderCache) {
+			result = finderCache.getResult(
+				_finderPathFetchByStorageId, finderArgs, this);
+		}
+
+		if (result instanceof DDMFormInstanceRecord) {
+			DDMFormInstanceRecord ddmFormInstanceRecord =
+				(DDMFormInstanceRecord)result;
+
+			if (storageId != ddmFormInstanceRecord.getStorageId()) {
+				result = null;
+			}
+		}
+
+		if (result == null) {
+			StringBundler query = new StringBundler(3);
+
+			query.append(_SQL_SELECT_DDMFORMINSTANCERECORD_WHERE);
+
+			query.append(_FINDER_COLUMN_STORAGEID_STORAGEID_2);
+
+			String sql = query.toString();
+
+			Session session = null;
+
+			try {
+				session = openSession();
+
+				Query q = session.createQuery(sql);
+
+				QueryPos qPos = QueryPos.getInstance(q);
+
+				qPos.add(storageId);
+
+				List<DDMFormInstanceRecord> list = q.list();
+
+				if (list.isEmpty()) {
+					if (useFinderCache) {
+						finderCache.putResult(
+							_finderPathFetchByStorageId, finderArgs, list);
+					}
+				}
+				else {
+					if (list.size() > 1) {
+						Collections.sort(list, Collections.reverseOrder());
+
+						if (_log.isWarnEnabled()) {
+							if (!useFinderCache) {
+								finderArgs = new Object[] {storageId};
+							}
+
+							_log.warn(
+								"DDMFormInstanceRecordPersistenceImpl.fetchByStorageId(long, boolean) with parameters (" +
+									StringUtil.merge(finderArgs) +
+										") yields a result set with more than 1 result. This violates the logical unique restriction. There is no order guarantee on which result is returned by this finder.");
+						}
+					}
+
+					DDMFormInstanceRecord ddmFormInstanceRecord = list.get(0);
+
+					result = ddmFormInstanceRecord;
+
+					cacheResult(ddmFormInstanceRecord);
+				}
+			}
+			catch (Exception exception) {
+				if (useFinderCache) {
+					finderCache.removeResult(
+						_finderPathFetchByStorageId, finderArgs);
+				}
+
+				throw processException(exception);
+			}
+			finally {
+				closeSession(session);
+			}
+		}
+
+		if (result instanceof List<?>) {
+			return null;
+		}
+		else {
+			return (DDMFormInstanceRecord)result;
+		}
+	}
+
+	/**
+	 * Removes the ddm form instance record where storageId = &#63; from the database.
+	 *
+	 * @param storageId the storage ID
+	 * @return the ddm form instance record that was removed
+	 */
+	@Override
+	public DDMFormInstanceRecord removeByStorageId(long storageId)
+		throws NoSuchFormInstanceRecordException {
+
+		DDMFormInstanceRecord ddmFormInstanceRecord = findByStorageId(
+			storageId);
+
+		return remove(ddmFormInstanceRecord);
+	}
+
+	/**
+	 * Returns the number of ddm form instance records where storageId = &#63;.
+	 *
+	 * @param storageId the storage ID
+	 * @return the number of matching ddm form instance records
+	 */
+	@Override
+	public int countByStorageId(long storageId) {
+		FinderPath finderPath = _finderPathCountByStorageId;
+
+		Object[] finderArgs = new Object[] {storageId};
+
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+
+		if (count == null) {
+			StringBundler query = new StringBundler(2);
+
+			query.append(_SQL_COUNT_DDMFORMINSTANCERECORD_WHERE);
+
+			query.append(_FINDER_COLUMN_STORAGEID_STORAGEID_2);
+
+			String sql = query.toString();
+
+			Session session = null;
+
+			try {
+				session = openSession();
+
+				Query q = session.createQuery(sql);
+
+				QueryPos qPos = QueryPos.getInstance(q);
+
+				qPos.add(storageId);
+
+				count = (Long)q.uniqueResult();
+
+				finderCache.putResult(finderPath, finderArgs, count);
+			}
+			catch (Exception exception) {
+				finderCache.removeResult(finderPath, finderArgs);
+
+				throw processException(exception);
+			}
+			finally {
+				closeSession(session);
+			}
+		}
+
+		return count.intValue();
+	}
+
+	private static final String _FINDER_COLUMN_STORAGEID_STORAGEID_2 =
+		"ddmFormInstanceRecord.storageId = ?";
+
 	public DDMFormInstanceRecordPersistenceImpl() {
 		setModelClass(DDMFormInstanceRecord.class);
 
@@ -3702,6 +3927,11 @@ public class DDMFormInstanceRecordPersistenceImpl
 				ddmFormInstanceRecord.getUuid(),
 				ddmFormInstanceRecord.getGroupId()
 			},
+			ddmFormInstanceRecord);
+
+		finderCache.putResult(
+			_finderPathFetchByStorageId,
+			new Object[] {ddmFormInstanceRecord.getStorageId()},
 			ddmFormInstanceRecord);
 
 		ddmFormInstanceRecord.resetOriginalValues();
@@ -3810,6 +4040,14 @@ public class DDMFormInstanceRecordPersistenceImpl
 		finderCache.putResult(
 			_finderPathFetchByUUID_G, args, ddmFormInstanceRecordModelImpl,
 			false);
+
+		args = new Object[] {ddmFormInstanceRecordModelImpl.getStorageId()};
+
+		finderCache.putResult(
+			_finderPathCountByStorageId, args, Long.valueOf(1), false);
+		finderCache.putResult(
+			_finderPathFetchByStorageId, args, ddmFormInstanceRecordModelImpl,
+			false);
 	}
 
 	protected void clearUniqueFindersCache(
@@ -3836,6 +4074,26 @@ public class DDMFormInstanceRecordPersistenceImpl
 
 			finderCache.removeResult(_finderPathCountByUUID_G, args);
 			finderCache.removeResult(_finderPathFetchByUUID_G, args);
+		}
+
+		if (clearCurrent) {
+			Object[] args = new Object[] {
+				ddmFormInstanceRecordModelImpl.getStorageId()
+			};
+
+			finderCache.removeResult(_finderPathCountByStorageId, args);
+			finderCache.removeResult(_finderPathFetchByStorageId, args);
+		}
+
+		if ((ddmFormInstanceRecordModelImpl.getColumnBitmask() &
+			 _finderPathFetchByStorageId.getColumnBitmask()) != 0) {
+
+			Object[] args = new Object[] {
+				ddmFormInstanceRecordModelImpl.getOriginalStorageId()
+			};
+
+			finderCache.removeResult(_finderPathCountByStorageId, args);
+			finderCache.removeResult(_finderPathFetchByStorageId, args);
 		}
 	}
 
@@ -4673,6 +4931,17 @@ public class DDMFormInstanceRecordPersistenceImpl
 			entityCacheEnabled, finderCacheEnabled, Long.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByF_F",
 			new String[] {Long.class.getName(), String.class.getName()});
+
+		_finderPathFetchByStorageId = new FinderPath(
+			entityCacheEnabled, finderCacheEnabled,
+			DDMFormInstanceRecordImpl.class, FINDER_CLASS_NAME_ENTITY,
+			"fetchByStorageId", new String[] {Long.class.getName()},
+			DDMFormInstanceRecordModelImpl.STORAGEID_COLUMN_BITMASK);
+
+		_finderPathCountByStorageId = new FinderPath(
+			entityCacheEnabled, finderCacheEnabled, Long.class,
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByStorageId",
+			new String[] {Long.class.getName()});
 	}
 
 	@Deactivate
