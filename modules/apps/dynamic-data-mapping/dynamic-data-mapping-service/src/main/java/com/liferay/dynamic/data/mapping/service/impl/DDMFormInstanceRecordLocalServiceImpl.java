@@ -249,6 +249,14 @@ public class DDMFormInstanceRecordLocalServiceImpl
 		return ddmFormInstanceRecordPersistence.fetchByPrimaryKey(
 			ddmFormInstanceRecordId);
 	}
+	
+	@Override
+	public DDMFormInstanceRecord fetchFormInstanceRecordByStorageId(
+			long storageId)
+		throws PortalException {
+
+		return ddmFormInstanceRecordPersistence.fetchByStorageId(storageId);
+	}
 
 	@Override
 	public DDMFormValues getDDMFormValues(
