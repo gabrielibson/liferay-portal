@@ -14,13 +14,81 @@
 
 package com.liferay.dynamic.data.mapping.uad.anonymizer;
 
+import com.liferay.dynamic.data.mapping.model.DDMContent;
+import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord;
+import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecordVersion;
+import com.liferay.dynamic.data.mapping.service.DDMFormInstanceRecordLocalService;
+import com.liferay.dynamic.data.mapping.service.DDMFormInstanceRecordVersionLocalService;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.user.associated.data.anonymizer.UADAnonymizer;
 
+import java.util.List;
+
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Brian Wing Shun Chan
  */
 @Component(immediate = true, service = UADAnonymizer.class)
 public class DDMContentUADAnonymizer extends BaseDDMContentUADAnonymizer {
+
+	@Override
+	public void autoAnonymize(
+			DDMContent ddmContent, long userId, User anonymousUser)
+		throws PortalException {
+
+		super.autoAnonymize(ddmContent, userId, anonymousUser);
+
+		DDMFormInstanceRecord ddmFormInstanceRecord =
+			ddmFormInstanceRecordLocalService.
+				fetchFormInstanceRecordByStorageId(ddmContent.getContentId());
+
+		if (ddmFormInstanceRecord.getUserId() == userId) {
+			ddmFormInstanceRecord.setUserId(anonymousUser.getUserId());
+			ddmFormInstanceRecord.setUserName(anonymousUser.getFullName());
+		}
+
+		if (ddmFormInstanceRecord.getVersionUserId() == userId) {
+			ddmFormInstanceRecord.setVersionUserId(anonymousUser.getUserId());
+			ddmFormInstanceRecord.setVersionUserName(
+				anonymousUser.getFullName());
+			ddmFormInstanceRecord.setVersionUserUuid(anonymousUser.getUuid());
+		}
+
+		ddmFormInstanceRecordLocalService.updateDDMFormInstanceRecord(
+			ddmFormInstanceRecord);
+
+		List<DDMFormInstanceRecordVersion> ddmFormInstanceRecordVersions =
+			ddmFormInstanceRecordVersionLocalService.
+				getFormInstanceRecordVersions(
+					ddmFormInstanceRecord.getFormInstanceRecordId(),
+					QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+
+		ddmFormInstanceRecordVersions.forEach(
+			ddmFormInstanceRecordVersion -> {
+				if (ddmFormInstanceRecordVersion.getUserId() == userId) {
+					ddmFormInstanceRecordVersion.setUserId(
+						anonymousUser.getUserId());
+
+					ddmFormInstanceRecordVersion.setUserName(
+						anonymousUser.getFullName());
+
+					ddmFormInstanceRecordVersionLocalService.
+						updateDDMFormInstanceRecordVersion(
+							ddmFormInstanceRecordVersion);
+				}
+			});
+	}
+
+	@Reference
+	protected DDMFormInstanceRecordLocalService
+		ddmFormInstanceRecordLocalService;
+
+	@Reference
+	protected DDMFormInstanceRecordVersionLocalService
+		ddmFormInstanceRecordVersionLocalService;
+
 }
