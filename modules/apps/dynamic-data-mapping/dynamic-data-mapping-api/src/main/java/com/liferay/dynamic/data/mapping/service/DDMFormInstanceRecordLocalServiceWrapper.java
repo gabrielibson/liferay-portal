@@ -285,8 +285,7 @@ public class DDMFormInstanceRecordLocalServiceWrapper
 
 	@Override
 	public com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord
-			fetchFormInstanceRecordByStorageId(long storageId)
-		throws com.liferay.portal.kernel.exception.PortalException {
+		fetchFormInstanceRecordByStorageId(long storageId) {
 
 		return _ddmFormInstanceRecordLocalService.
 			fetchFormInstanceRecordByStorageId(storageId);
