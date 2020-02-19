@@ -236,8 +236,7 @@ public interface DDMFormInstanceRecordLocalService
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public DDMFormInstanceRecord fetchFormInstanceRecordByStorageId(
-			long storageId)
-		throws PortalException;
+		long storageId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public ActionableDynamicQuery getActionableDynamicQuery();

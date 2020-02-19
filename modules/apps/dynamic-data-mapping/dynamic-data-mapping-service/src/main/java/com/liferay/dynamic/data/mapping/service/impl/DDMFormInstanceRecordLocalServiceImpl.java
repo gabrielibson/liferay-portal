@@ -252,8 +252,7 @@ public class DDMFormInstanceRecordLocalServiceImpl
 	
 	@Override
 	public DDMFormInstanceRecord fetchFormInstanceRecordByStorageId(
-			long storageId)
-		throws PortalException {
+			long storageId) {
 
 		return ddmFormInstanceRecordPersistence.fetchByStorageId(storageId);
 	}
