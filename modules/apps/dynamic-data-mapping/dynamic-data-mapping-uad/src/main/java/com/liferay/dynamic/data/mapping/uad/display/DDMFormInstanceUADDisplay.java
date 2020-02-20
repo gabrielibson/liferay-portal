@@ -12,19 +12,15 @@
  * details.
  */
 
-package com.liferay.dynamic.data.mapping.uad.constants;
+package com.liferay.dynamic.data.mapping.uad.display;
+
+import com.liferay.user.associated.data.display.UADDisplay;
+
+import org.osgi.service.component.annotations.Component;
 
 /**
  * @author Brian Wing Shun Chan
- * @generated
  */
-public class DDMUADConstants {
-
-	public static final String[] USER_ID_FIELD_NAMES_DDM_FORM_INSTANCE = {
-		"userId", "versionUserId"
-	};
-
-	public static final String[] USER_ID_FIELD_NAMES_DDM_FORM_INSTANCE_RECORD =
-		{"userId", "versionUserId"};
-
+@Component(immediate = true, service = UADDisplay.class)
+public class DDMFormInstanceUADDisplay extends BaseDDMFormInstanceUADDisplay {
 }
