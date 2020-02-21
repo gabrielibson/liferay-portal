@@ -16,10 +16,17 @@ package com.liferay.dynamic.data.mapping.uad.display;
 
 import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord;
+import com.liferay.dynamic.data.mapping.service.DDMFormInstanceRecordLocalService;
 import com.liferay.dynamic.data.mapping.uad.util.DDMFormInstanceRecordUADHelper;
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Property;
+import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.user.associated.data.display.UADDisplay;
 
 import java.io.Serializable;
@@ -30,6 +37,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 /**
  * @author Brian Wing Shun Chan
@@ -42,14 +50,7 @@ public class DDMFormInstanceUADDisplay extends BaseDDMFormInstanceUADDisplay {
 
 	@Override
 	public String getName(DDMFormInstance ddmFormInstance, Locale locale) {
-		Document document = _ddmFormInstanceRecordHelper.toXMLDocument(
-			ddmFormInstance.getName());
-
-		return document.getFirstChild(
-		).getChildNodes(
-		).item(
-			0
-		).getTextContent();
+		return _getFormInstanceFormattedName(ddmFormInstance);
 	}
 
 	@Override
@@ -71,16 +72,16 @@ public class DDMFormInstanceUADDisplay extends BaseDDMFormInstanceUADDisplay {
 			return null;
 		}
 
-		try {
-			if (childObject instanceof DDMFormInstanceRecord) {
+		if (childObject instanceof DDMFormInstanceRecord) {
+			try {
 				DDMFormInstanceRecord ddmFormInstanceRecord =
 					(DDMFormInstanceRecord)childObject;
 
 				return ddmFormInstanceRecord.getFormInstance();
 			}
-		}
-		catch (PortalException e) {
-			_log.error(e, e);
+			catch (PortalException portalException) {
+				_log.error(portalException, portalException);
+			}
 		}
 
 		return null;
@@ -95,10 +96,60 @@ public class DDMFormInstanceUADDisplay extends BaseDDMFormInstanceUADDisplay {
 		return false;
 	}
 
+	@Override
+	protected DynamicQuery getSearchDynamicQuery(
+		long userId, long[] groupIds, String keywords, String orderByField,
+		String orderByType) {
+
+		DynamicQuery dynamicQuery =
+			_ddmFormInstanceRecordUADHelper.createFormInstanceQuery(
+				keywords, getSearchableFields(), orderByField, orderByType);
+
+		DynamicQuery dynamicSubquery =
+			_ddmFormInstanceRecordLocalService.dynamicQuery();
+
+		dynamicSubquery.setProjection(
+			ProjectionFactoryUtil.property("formInstanceId"));
+
+		Property userIdProperty = PropertyFactoryUtil.forName("userId");
+		Property versionUserIdProperty = PropertyFactoryUtil.forName(
+			"versionUserId");
+
+		dynamicSubquery.add(
+			RestrictionsFactoryUtil.or(
+				userIdProperty.eq(userId), versionUserIdProperty.eq(userId)));
+
+		if (isSiteScoped() && ArrayUtil.isNotEmpty(groupIds)) {
+			_ddmFormInstanceRecordUADHelper.addGroupIdRestriction(
+				dynamicQuery, groupIds);
+			_ddmFormInstanceRecordUADHelper.addGroupIdRestriction(
+				dynamicSubquery, groupIds);
+		}
+
+		Property nameProperty = PropertyFactoryUtil.forName("formInstanceId");
+
+		return dynamicQuery.add(nameProperty.in(dynamicSubquery));
+	}
+
+	private String _getFormInstanceFormattedName(
+		DDMFormInstance ddmFormInstance) {
+
+		Document document = _ddmFormInstanceRecordUADHelper.toXMLDocument(
+			ddmFormInstance.getName());
+
+		Node firstChild = document.getFirstChild();
+
+		return firstChild.getTextContent();
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		DDMFormInstanceUADDisplay.class);
 
 	@Reference
-	private DDMFormInstanceRecordUADHelper _ddmFormInstanceRecordHelper;
+	private DDMFormInstanceRecordLocalService
+		_ddmFormInstanceRecordLocalService;
+
+	@Reference
+	private DDMFormInstanceRecordUADHelper _ddmFormInstanceRecordUADHelper;
 
 }
