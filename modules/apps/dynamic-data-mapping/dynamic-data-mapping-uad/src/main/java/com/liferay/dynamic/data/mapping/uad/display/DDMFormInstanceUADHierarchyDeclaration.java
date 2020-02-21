@@ -41,7 +41,7 @@ public class DDMFormInstanceUADHierarchyDeclaration
 		return LanguageUtil.get(
 			ResourceBundleUtil.getBundle(
 				locale, DDMFormInstanceUADHierarchyDeclaration.class),
-			"ddm-form-web-configuration-name");
+			"ddm-form-instance");
 	}
 
 	@Override

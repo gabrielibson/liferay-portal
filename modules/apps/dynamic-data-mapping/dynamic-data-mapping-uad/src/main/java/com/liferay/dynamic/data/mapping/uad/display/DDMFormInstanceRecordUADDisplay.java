@@ -17,11 +17,21 @@ package com.liferay.dynamic.data.mapping.uad.display;
 import com.liferay.dynamic.data.mapping.constants.DDMPortletKeys;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord;
+import com.liferay.dynamic.data.mapping.service.DDMFormInstanceLocalService;
+import com.liferay.dynamic.data.mapping.uad.util.DDMFormInstanceRecordUADHelper;
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Property;
+import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.user.associated.data.display.UADDisplay;
 
@@ -44,6 +54,11 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class DDMFormInstanceRecordUADDisplay
 	extends BaseDDMFormInstanceRecordUADDisplay {
+
+	@Override
+	public long count(long userId) {
+		return 0;
+	}
 
 	@Override
 	public String getEditURL(
@@ -88,7 +103,15 @@ public class DDMFormInstanceRecordUADDisplay
 	public String getName(
 		DDMFormInstanceRecord ddmFormInstanceRecord, Locale locale) {
 
-		return ddmFormInstanceRecord.getVersion();
+		return LanguageUtil.get(
+			ResourceBundleUtil.getBundle(
+				locale, DDMFormInstanceRecordUADDisplay.class),
+			"ddm-form-instance-record"
+		).concat(
+			" #"
+		).concat(
+			String.valueOf(ddmFormInstanceRecord.getFormInstanceRecordId())
+		);
 	}
 
 	@Override
@@ -114,12 +137,67 @@ public class DDMFormInstanceRecordUADDisplay
 		return false;
 	}
 
+	@Override
+	public long searchCount(long userId, long[] groupIds, String keywords) {
+		return 0;
+	}
+
+	@Override
+	protected long doCount(DynamicQuery dynamicQuery) {
+		return 0;
+	}
+
+	@Override
+	protected DynamicQuery getSearchDynamicQuery(
+		long userId, long[] groupIds, String keywords, String orderByField,
+		String orderByType) {
+
+		DynamicQuery dynamicSubquery =
+			_ddmFormInstanceRecordUADHelper.createFormInstanceQuery(
+				keywords, new String[] {"name", "description"}, orderByField,
+				orderByType);
+
+		dynamicSubquery.setProjection(
+			ProjectionFactoryUtil.property("formInstanceId"));
+
+		DynamicQuery dynamicQuery =
+			ddmFormInstanceRecordLocalService.dynamicQuery();
+
+		Property userIdProperty = PropertyFactoryUtil.forName("userId");
+		Property versionUserIdProperty = PropertyFactoryUtil.forName(
+			"versionUserId");
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.or(
+				userIdProperty.eq(userId), versionUserIdProperty.eq(userId)));
+
+		if (isSiteScoped() && ArrayUtil.isNotEmpty(groupIds)) {
+			_ddmFormInstanceRecordUADHelper.addGroupIdRestriction(
+				dynamicQuery, groupIds);
+			_ddmFormInstanceRecordUADHelper.addGroupIdRestriction(
+				dynamicSubquery, groupIds);
+		}
+
+		Property nameProperty = PropertyFactoryUtil.forName("formInstanceId");
+
+		return dynamicQuery.add(nameProperty.in(dynamicSubquery));
+	}
+
 	protected ThemeDisplay getThemeDisplay(
 		HttpServletRequest httpServletRequest) {
 
 		return (ThemeDisplay)httpServletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 	}
+
+	@Reference
+	private DDMFormInstanceLocalService _ddmFormInstanceLocalService;
+
+	@Reference
+	private DDMFormInstanceRecordUADHelper _ddmFormInstanceRecordUADHelper;
+
+	@Reference
+	private DDMFormInstanceUADDisplay _ddmFormInstanceUADDisplay;
 
 	@Reference
 	private Portal _portal;
