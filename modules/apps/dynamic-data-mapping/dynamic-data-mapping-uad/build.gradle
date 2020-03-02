@@ -15,8 +15,8 @@ mergeLang {
 	setting("../dynamic-data-mapping-lang/src/main/resources/content") {
 		transformKeys = [
 			"ddm-form-instance": "ddm-form-instance",
-			"ddm-form-instance-record": "ddm-form-instance-record",
-			"javax.portlet.title.com_liferay_dynamic_data_mapping_form_web_portlet_DDMFormAdminPortlet": "application.name.com.liferay.dynamic.data.mapping.uad"
+			"javax.portlet.title.com_liferay_dynamic_data_mapping_form_web_portlet_DDMFormAdminPortlet": "application.name.com.liferay.dynamic.data.mapping.uad",
+			"record": "record"
 		]
 	}
 
