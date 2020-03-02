@@ -16,6 +16,7 @@ package com.liferay.dynamic.data.mapping.uad.util;
 
 import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
 import com.liferay.dynamic.data.mapping.service.DDMFormInstanceLocalService;
+import com.liferay.dynamic.data.mapping.uad.constants.DDMUADConstants;
 import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.dao.orm.Disjunction;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
@@ -28,6 +29,7 @@ import com.liferay.portal.kernel.security.xml.SecureXMLFactoryProviderUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TextFormatter;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.IOException;
@@ -35,6 +37,8 @@ import java.io.StringReader;
 
 import java.lang.reflect.Method;
 
+import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -45,6 +49,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -53,8 +58,8 @@ import org.xml.sax.SAXException;
  * @author Gabriel Ibson
  * @author Marcos Martins
  */
-@Component(immediate = true, service = DDMFormInstanceRecordUADHelper.class)
-public class DDMFormInstanceRecordUADHelper {
+@Component(immediate = true, service = DDMUADHelper.class)
+public class DDMUADHelper {
 
 	public void addGroupIdRestriction(
 		DynamicQuery dynamicQuery, long[] groupIds) {
@@ -118,6 +123,27 @@ public class DDMFormInstanceRecordUADHelper {
 		return dynamicQuery;
 	}
 
+	public void formatCreateDateIfExist(Map<String, Object> fieldValues) {
+		Date createdDate = (Date)fieldValues.get("createDate");
+
+		if (createdDate != null) {
+			fieldValues.put(
+				"createDate",
+				Time.getSimpleDate(
+					createdDate, DDMUADConstants.DEFAULT_DATE_FORMAT));
+		}
+	}
+
+	public String getFormInstanceFormattedName(
+		DDMFormInstance ddmFormInstance) {
+
+		Document document = toXMLDocument(ddmFormInstance.getName());
+
+		Node firstChild = document.getFirstChild();
+
+		return firstChild.getTextContent();
+	}
+
 	public Document toXMLDocument(String xml) {
 		try {
 			DocumentBuilderFactory documentBuilderFactory =
@@ -137,8 +163,7 @@ public class DDMFormInstanceRecordUADHelper {
 		return null;
 	}
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		DDMFormInstanceRecordUADHelper.class);
+	private static final Log _log = LogFactoryUtil.getLog(DDMUADHelper.class);
 
 	@Reference
 	private DDMFormInstanceLocalService _ddmFormInstanceLocalService;
