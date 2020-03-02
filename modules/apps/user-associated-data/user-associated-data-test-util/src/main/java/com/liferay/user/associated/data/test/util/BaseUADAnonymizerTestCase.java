@@ -82,7 +82,7 @@ public abstract class BaseUADAnonymizerTestCase<T extends BaseModel> {
 
 		T baseModel = whenHasStatusByUserIdField.addBaseModelWithStatusByUserId(
 			TestPropsValues.getUserId(), user.getUserId());
-
+		System.out.println("User ID: "+TestPropsValues.getUserId());
 		testAutoAnonymize(baseModel);
 	}
 
@@ -95,7 +95,7 @@ public abstract class BaseUADAnonymizerTestCase<T extends BaseModel> {
 
 		T baseModel = whenHasStatusByUserIdField.addBaseModelWithStatusByUserId(
 			user.getUserId(), TestPropsValues.getUserId());
-
+		System.out.println("User ID: "+user.getUserId());
 		testAutoAnonymize(baseModel);
 	}
 

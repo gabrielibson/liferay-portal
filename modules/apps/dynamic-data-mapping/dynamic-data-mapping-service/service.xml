@@ -17,15 +17,15 @@
 
 		<column name="companyId" type="long" />
 		<column name="userId" type="long" />
-		<column name="userName" type="String" uad-anonymize-field-name="fullName" />
+		<column name="userName" type="String" />
 		<column name="createDate" type="Date" />
 		<column name="modifiedDate" type="Date" />
 
 		<!-- Other fields -->
 
 		<column localized="true" name="name" type="String" />
-		<column name="description" type="String" uad-nonanonymizable="true" />
-		<column name="data" type="String" uad-nonanonymizable="true" />
+		<column name="description" type="String" />
+		<column name="data" type="String" />
 
 		<!-- Finder methods -->
 
@@ -35,7 +35,7 @@
 		<finder name="CompanyId" return-type="Collection">
 			<finder-column name="companyId" />
 		</finder>
-		
+
 		<!-- References -->
 
 		<reference entity="User" package-path="com.liferay.portal" />
