@@ -14,6 +14,19 @@
 
 package com.liferay.dynamic.data.mapping.uad.display;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 import com.liferay.dynamic.data.mapping.constants.DDMPortletKeys;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord;
@@ -38,20 +51,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.user.associated.data.display.UADDisplay;
-
-import java.io.Serializable;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Brian Wing Shun Chan
@@ -83,7 +82,7 @@ public class DDMFormInstanceRecordUADDisplay
 
 		Map<String, String[]> params = HashMapBuilder.put(
 			portletNamespace.concat("mvcPath"),
-			new String[] {"/admin/view_form_instance_record.jsp"}
+			new String[] {"/admin/edit_form_instance_record.jsp"}
 		).put(
 			portletNamespace.concat("formInstanceRecordId"),
 			new String[] {
@@ -100,6 +99,9 @@ public class DDMFormInstanceRecordUADDisplay
 		).put(
 			portletNamespace.concat("redirect"),
 			new String[] {_portal.getCurrentURL(httpServletRequest)}
+		).put(
+			portletNamespace.concat("title"),
+			new String[] {StringBundler.concat(ddmFormInstanceRecord.getUserName(), " - ", LanguageUtil.get(httpServletRequest, "personal-data-erasure")) }
 		).build();
 
 		return _portal.getSiteAdminURL(
