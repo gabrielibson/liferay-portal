@@ -92,6 +92,16 @@ public class DDMFormInstanceRecordUADAnonymizer
 						anonymousUser.getFullName());
 				}
 
+				if (ddmFormInstanceRecordVersion.getStatusByUserId() ==
+						userId) {
+
+					ddmFormInstanceRecordVersion.setStatusByUserId(
+						anonymousUser.getUserId());
+
+					ddmFormInstanceRecordVersion.setStatusByUserName(
+						anonymousUser.getFullName());
+				}
+
 				ddmContents.add(
 					ddmContentLocalService.fetchDDMContent(
 						ddmFormInstanceRecordVersion.getStorageId()));
