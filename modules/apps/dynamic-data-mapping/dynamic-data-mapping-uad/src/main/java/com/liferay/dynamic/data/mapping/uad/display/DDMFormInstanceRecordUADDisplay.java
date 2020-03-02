@@ -18,27 +18,35 @@ import com.liferay.dynamic.data.mapping.constants.DDMPortletKeys;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord;
 import com.liferay.dynamic.data.mapping.service.DDMFormInstanceLocalService;
-import com.liferay.dynamic.data.mapping.uad.util.DDMFormInstanceRecordUADHelper;
+import com.liferay.dynamic.data.mapping.uad.util.DDMFormInstanceRecordUADUserCacheHelper;
+import com.liferay.dynamic.data.mapping.uad.util.DDMUADHelper;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
-import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
-import com.liferay.portal.kernel.dao.orm.Property;
-import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
-import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
+import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.user.associated.data.display.UADDisplay;
 
 import java.io.Serializable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -100,18 +108,58 @@ public class DDMFormInstanceRecordUADDisplay
 	}
 
 	@Override
+	public Map<String, Object> getFieldValues(
+		DDMFormInstanceRecord ddmFormInstanceRecord, String[] fieldNames,
+		Locale locale) {
+
+		Map<String, Object> fieldValues = super.getFieldValues(
+			ddmFormInstanceRecord, fieldNames, locale);
+
+		_ddmUADHelper.formatCreateDateIfExist(fieldValues);
+
+		return fieldValues;
+	}
+
+	@Override
 	public String getName(
 		DDMFormInstanceRecord ddmFormInstanceRecord, Locale locale) {
 
-		return LanguageUtil.get(
-			ResourceBundleUtil.getBundle(
-				locale, DDMFormInstanceRecordUADDisplay.class),
-			"ddm-form-instance-record"
-		).concat(
-			" #"
-		).concat(
-			String.valueOf(ddmFormInstanceRecord.getFormInstanceRecordId())
-		);
+		try {
+			int formInstanceRecordIndex =
+				_ddmFormInstanceRecordUADCacheHelper.getFormInstanceRecordIndex(
+					ddmFormInstanceRecord);
+
+			DDMFormInstance ddmFormInstance =
+				ddmFormInstanceRecord.getFormInstance();
+
+			String formInstanceName =
+				_ddmUADHelper.getFormInstanceFormattedName(ddmFormInstance);
+
+			StringBundler sb = new StringBundler(6);
+
+			sb.append(formInstanceName);
+
+			sb.append(StringPool.SPACE);
+
+			sb.append(
+				LanguageUtil.get(
+					ResourceBundleUtil.getBundle(
+						locale, DDMFormInstanceRecordUADDisplay.class),
+					"record"));
+
+			sb.append(StringPool.SPACE);
+
+			sb.append(StringPool.POUND);
+
+			sb.append(formInstanceRecordIndex + 1);
+
+			return sb.toString();
+		}
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
+		}
+
+		return StringPool.BLANK;
 	}
 
 	@Override
@@ -138,6 +186,43 @@ public class DDMFormInstanceRecordUADDisplay
 	}
 
 	@Override
+	public List<DDMFormInstanceRecord> search(
+		long userId, long[] groupIds, String keywords, String orderByField,
+		String orderByType, int start, int end) {
+
+		List<DDMFormInstanceRecord> ddmFormInstanceRecords = new ArrayList<>();
+
+		ddmFormInstanceRecords.addAll(
+			super.search(
+				userId, groupIds, StringPool.BLANK, orderByField, orderByType,
+				start, end));
+
+		if(Validator.isNull(keywords)) {
+			return ddmFormInstanceRecords;
+		}
+
+		Locale locale = LocaleThreadLocal.getThemeDisplayLocale();
+
+		Stream<DDMFormInstanceRecord> ddmFormInstanceRecordsStream =
+			ddmFormInstanceRecords.stream();
+		
+
+		return ddmFormInstanceRecordsStream.filter(
+			ddmFormInstanceRecord -> {
+				String formattedName = getName(ddmFormInstanceRecord, locale);
+
+				return StringUtil.toLowerCase(
+					formattedName
+				).contains(
+					StringUtil.toLowerCase(keywords)
+				);
+			}
+		).collect(
+			Collectors.toList()
+		);
+	}
+
+	@Override
 	public long searchCount(long userId, long[] groupIds, String keywords) {
 		return 0;
 	}
@@ -147,42 +232,6 @@ public class DDMFormInstanceRecordUADDisplay
 		return 0;
 	}
 
-	@Override
-	protected DynamicQuery getSearchDynamicQuery(
-		long userId, long[] groupIds, String keywords, String orderByField,
-		String orderByType) {
-
-		DynamicQuery dynamicSubquery =
-			_ddmFormInstanceRecordUADHelper.createFormInstanceQuery(
-				keywords, new String[] {"name", "description"}, orderByField,
-				orderByType);
-
-		dynamicSubquery.setProjection(
-			ProjectionFactoryUtil.property("formInstanceId"));
-
-		DynamicQuery dynamicQuery =
-			ddmFormInstanceRecordLocalService.dynamicQuery();
-
-		Property userIdProperty = PropertyFactoryUtil.forName("userId");
-		Property versionUserIdProperty = PropertyFactoryUtil.forName(
-			"versionUserId");
-
-		dynamicQuery.add(
-			RestrictionsFactoryUtil.or(
-				userIdProperty.eq(userId), versionUserIdProperty.eq(userId)));
-
-		if (isSiteScoped() && ArrayUtil.isNotEmpty(groupIds)) {
-			_ddmFormInstanceRecordUADHelper.addGroupIdRestriction(
-				dynamicQuery, groupIds);
-			_ddmFormInstanceRecordUADHelper.addGroupIdRestriction(
-				dynamicSubquery, groupIds);
-		}
-
-		Property nameProperty = PropertyFactoryUtil.forName("formInstanceId");
-
-		return dynamicQuery.add(nameProperty.in(dynamicSubquery));
-	}
-
 	protected ThemeDisplay getThemeDisplay(
 		HttpServletRequest httpServletRequest) {
 
@@ -190,14 +239,21 @@ public class DDMFormInstanceRecordUADDisplay
 			WebKeys.THEME_DISPLAY);
 	}
 
+	private static final Log _log = LogFactoryUtil.getLog(
+		DDMFormInstanceRecordUADDisplay.class);
+
 	@Reference
 	private DDMFormInstanceLocalService _ddmFormInstanceLocalService;
 
 	@Reference
-	private DDMFormInstanceRecordUADHelper _ddmFormInstanceRecordUADHelper;
+	private DDMFormInstanceRecordUADUserCacheHelper
+		_ddmFormInstanceRecordUADCacheHelper;
 
 	@Reference
 	private DDMFormInstanceUADDisplay _ddmFormInstanceUADDisplay;
+
+	@Reference
+	private DDMUADHelper _ddmUADHelper;
 
 	@Reference
 	private Portal _portal;

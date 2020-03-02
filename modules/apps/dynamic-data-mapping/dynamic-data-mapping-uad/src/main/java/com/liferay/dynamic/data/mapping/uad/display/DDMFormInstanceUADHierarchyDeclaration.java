@@ -45,6 +45,11 @@ public class DDMFormInstanceUADHierarchyDeclaration
 	}
 
 	@Override
+	public String[] getExtraColumnNames() {
+		return new String[] {"createDate"};
+	}
+
+	@Override
 	public UADDisplay<?>[] getNoncontainerUADDisplays() {
 		return new UADDisplay<?>[] {_ddmFormInstanceRecordUADDisplay};
 	}
