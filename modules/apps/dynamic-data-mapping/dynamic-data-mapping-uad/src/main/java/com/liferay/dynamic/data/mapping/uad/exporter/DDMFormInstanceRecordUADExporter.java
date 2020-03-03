@@ -14,17 +14,11 @@
 
 package com.liferay.dynamic.data.mapping.uad.exporter;
 
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import com.liferay.dynamic.data.mapping.model.DDMContent;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord;
 import com.liferay.dynamic.data.mapping.service.DDMContentLocalService;
-import com.liferay.dynamic.data.mapping.uad.util.DDMFormInstanceRecordUADHelper;
+import com.liferay.dynamic.data.mapping.uad.util.DDMUADHelper;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
@@ -33,6 +27,13 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.user.associated.data.exporter.UADExporter;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * @author Brian Wing Shun Chan
@@ -96,8 +97,7 @@ public class DDMFormInstanceRecordUADExporter
 	private String _getDDMFormInstanceNameFromXMLStructure(
 		String ddmFormInstanceName) {
 
-		Document document = _ddmFormInstanceRecordHelper.toXMLDocument(
-			ddmFormInstanceName);
+		Document document = _ddmUADHelper.toXMLDocument(ddmFormInstanceName);
 
 		Node firstChild = document.getFirstChild();
 
@@ -170,6 +170,6 @@ public class DDMFormInstanceRecordUADExporter
 		DDMFormInstanceRecordUADExporter.class);
 
 	@Reference
-	private DDMFormInstanceRecordUADHelper _ddmFormInstanceRecordHelper;
+	private DDMUADHelper _ddmUADHelper;
 
 }

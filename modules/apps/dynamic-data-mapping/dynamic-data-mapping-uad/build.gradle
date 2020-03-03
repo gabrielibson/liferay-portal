@@ -13,7 +13,11 @@ dependencies {
 
 mergeLang {
 	setting("../dynamic-data-mapping-lang/src/main/resources/content") {
-		transformKey "javax.portlet.title.com_liferay_dynamic_data_mapping_form_web_portlet_DDMFormAdminPortlet", "application.name.com.liferay.dynamic.data.mapping.uad"
+		transformKeys = [
+			"ddm-form-instance": "ddm-form-instance",
+			"javax.portlet.title.com_liferay_dynamic_data_mapping_form_web_portlet_DDMFormAdminPortlet": "application.name.com.liferay.dynamic.data.mapping.uad",
+			"record": "record"
+		]
 	}
 
 	sourceDirs = ["../dynamic-data-mapping-lang/src/main/resources/content"]

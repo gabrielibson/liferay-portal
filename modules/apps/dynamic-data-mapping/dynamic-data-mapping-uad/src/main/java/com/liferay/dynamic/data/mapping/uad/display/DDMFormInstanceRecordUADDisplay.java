@@ -17,18 +17,36 @@ package com.liferay.dynamic.data.mapping.uad.display;
 import com.liferay.dynamic.data.mapping.constants.DDMPortletKeys;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord;
+import com.liferay.dynamic.data.mapping.service.DDMFormInstanceLocalService;
+import com.liferay.dynamic.data.mapping.uad.util.DDMFormInstanceRecordUADUserCacheHelper;
+import com.liferay.dynamic.data.mapping.uad.util.DDMUADHelper;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
+import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.user.associated.data.display.UADDisplay;
 
 import java.io.Serializable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -46,6 +64,11 @@ public class DDMFormInstanceRecordUADDisplay
 	extends BaseDDMFormInstanceRecordUADDisplay {
 
 	@Override
+	public long count(long userId) {
+		return 0;
+	}
+
+	@Override
 	public String getEditURL(
 			DDMFormInstanceRecord ddmFormInstanceRecord,
 			LiferayPortletRequest liferayPortletRequest,
@@ -60,7 +83,7 @@ public class DDMFormInstanceRecordUADDisplay
 
 		Map<String, String[]> params = HashMapBuilder.put(
 			portletNamespace.concat("mvcPath"),
-			new String[] {"/admin/view_form_instance_record.jsp"}
+			new String[] {"/admin/edit_form_instance_record.jsp"}
 		).put(
 			portletNamespace.concat("formInstanceRecordId"),
 			new String[] {
@@ -77,6 +100,14 @@ public class DDMFormInstanceRecordUADDisplay
 		).put(
 			portletNamespace.concat("redirect"),
 			new String[] {_portal.getCurrentURL(httpServletRequest)}
+		).put(
+			portletNamespace.concat("title"),
+			new String[] {
+				StringBundler.concat(
+					ddmFormInstanceRecord.getUserName(), " - ",
+					LanguageUtil.get(
+						httpServletRequest, "personal-data-erasure"))
+			}
 		).build();
 
 		return _portal.getSiteAdminURL(
@@ -85,10 +116,58 @@ public class DDMFormInstanceRecordUADDisplay
 	}
 
 	@Override
+	public Map<String, Object> getFieldValues(
+		DDMFormInstanceRecord ddmFormInstanceRecord, String[] fieldNames,
+		Locale locale) {
+
+		Map<String, Object> fieldValues = super.getFieldValues(
+			ddmFormInstanceRecord, fieldNames, locale);
+
+		_ddmUADHelper.formatCreateDateIfExist(fieldValues);
+
+		return fieldValues;
+	}
+
+	@Override
 	public String getName(
 		DDMFormInstanceRecord ddmFormInstanceRecord, Locale locale) {
 
-		return ddmFormInstanceRecord.getVersion();
+		try {
+			int formInstanceRecordIndex =
+				_ddmFormInstanceRecordUADCacheHelper.getFormInstanceRecordIndex(
+					ddmFormInstanceRecord);
+
+			DDMFormInstance ddmFormInstance =
+				ddmFormInstanceRecord.getFormInstance();
+
+			String formInstanceName =
+				_ddmUADHelper.getFormInstanceFormattedName(ddmFormInstance);
+
+			StringBundler sb = new StringBundler(6);
+
+			sb.append(formInstanceName);
+
+			sb.append(StringPool.SPACE);
+
+			sb.append(
+				LanguageUtil.get(
+					ResourceBundleUtil.getBundle(
+						locale, DDMFormInstanceRecordUADDisplay.class),
+					"record"));
+
+			sb.append(StringPool.SPACE);
+
+			sb.append(StringPool.POUND);
+
+			sb.append(formInstanceRecordIndex + 1);
+
+			return sb.toString();
+		}
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
+		}
+
+		return StringPool.BLANK;
 	}
 
 	@Override
@@ -114,12 +193,74 @@ public class DDMFormInstanceRecordUADDisplay
 		return false;
 	}
 
+	@Override
+	public List<DDMFormInstanceRecord> search(
+		long userId, long[] groupIds, String keywords, String orderByField,
+		String orderByType, int start, int end) {
+
+		List<DDMFormInstanceRecord> ddmFormInstanceRecords = new ArrayList<>();
+
+		ddmFormInstanceRecords.addAll(
+			super.search(
+				userId, groupIds, StringPool.BLANK, orderByField, orderByType,
+				start, end));
+
+		if (Validator.isNull(keywords)) {
+			return ddmFormInstanceRecords;
+		}
+
+		Locale locale = LocaleThreadLocal.getThemeDisplayLocale();
+
+		Stream<DDMFormInstanceRecord> ddmFormInstanceRecordsStream =
+			ddmFormInstanceRecords.stream();
+
+		return ddmFormInstanceRecordsStream.filter(
+			ddmFormInstanceRecord -> {
+				String formattedName = getName(ddmFormInstanceRecord, locale);
+
+				return StringUtil.toLowerCase(
+					formattedName
+				).contains(
+					StringUtil.toLowerCase(keywords)
+				);
+			}
+		).collect(
+			Collectors.toList()
+		);
+	}
+
+	@Override
+	public long searchCount(long userId, long[] groupIds, String keywords) {
+		return 0;
+	}
+
+	@Override
+	protected long doCount(DynamicQuery dynamicQuery) {
+		return 0;
+	}
+
 	protected ThemeDisplay getThemeDisplay(
 		HttpServletRequest httpServletRequest) {
 
 		return (ThemeDisplay)httpServletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DDMFormInstanceRecordUADDisplay.class);
+
+	@Reference
+	private DDMFormInstanceLocalService _ddmFormInstanceLocalService;
+
+	@Reference
+	private DDMFormInstanceRecordUADUserCacheHelper
+		_ddmFormInstanceRecordUADCacheHelper;
+
+	@Reference
+	private DDMFormInstanceUADDisplay _ddmFormInstanceUADDisplay;
+
+	@Reference
+	private DDMUADHelper _ddmUADHelper;
 
 	@Reference
 	private Portal _portal;

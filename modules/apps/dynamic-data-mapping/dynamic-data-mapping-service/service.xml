@@ -122,9 +122,9 @@
 
 		<column name="companyId" type="long" />
 		<column name="userId" type="long" />
-		<column name="userName" type="String" />
+		<column name="userName" type="String" uad-anonymize-field-name="fullName" />
 		<column name="versionUserId" type="long" />
-		<column name="versionUserName" type="String" />
+		<column name="versionUserName" type="String" uad-anonymize-field-name="fullName" />
 		<column name="createDate" type="Date" />
 		<column name="modifiedDate" type="Date" />
 
@@ -165,9 +165,9 @@
 
 		<column name="companyId" type="long" />
 		<column name="userId" type="long" />
-		<column name="userName" type="String" uad-anonymize-field-name="fullName" />
+		<column name="userName" type="String"/>
 		<column name="versionUserId" type="long" />
-		<column name="versionUserName" type="String" uad-anonymize-field-name="fullName" />
+		<column name="versionUserName" type="String"/>
 		<column name="createDate" type="Date" />
 		<column name="modifiedDate" type="Date" />
 

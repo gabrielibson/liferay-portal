@@ -19,7 +19,15 @@ import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecordVersion;
 import com.liferay.dynamic.data.mapping.service.DDMContentLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMFormInstanceRecordVersionLocalService;
+import com.liferay.dynamic.data.mapping.uad.constants.DDMUADConstants;
+import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
+import com.liferay.portal.kernel.dao.orm.Disjunction;
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Property;
+import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.user.associated.data.anonymizer.UADAnonymizer;
@@ -53,6 +61,44 @@ public class DDMFormInstanceRecordUADAnonymizer
 
 		_anonymizeDDMFormIntanceRecordVersions(
 			ddmFormInstanceRecordVersions, userId, anonymousUser);
+	}
+
+	@Override
+	protected ActionableDynamicQuery getActionableDynamicQuery(long userId) {
+		ActionableDynamicQuery actionableDynamicQuery =
+			doGetActionableDynamicQuery();
+
+		actionableDynamicQuery.setAddCriteriaMethod(
+			dynamicQuery -> {
+				Disjunction disjunction = RestrictionsFactoryUtil.disjunction();
+
+				for (String userIdFieldName :
+						DDMUADConstants.
+							USER_ID_FIELD_NAMES_DDM_FORM_INSTANCE_RECORD) {
+
+					disjunction.add(
+						RestrictionsFactoryUtil.eq(userIdFieldName, userId));
+				}
+
+				DynamicQuery dynamicSubquery =
+					ddmFormInstanceRecordVersionLocalService.dynamicQuery();
+
+				dynamicSubquery.setProjection(
+					ProjectionFactoryUtil.property("formInstanceRecordId"));
+
+				dynamicSubquery.add(
+					RestrictionsFactoryUtil.eq("statusByUserId", userId));
+
+				Property formInstanceRecordIdProperty =
+					PropertyFactoryUtil.forName("formInstanceRecordId");
+
+				disjunction.add(
+					formInstanceRecordIdProperty.in(dynamicSubquery));
+
+				dynamicQuery.add(disjunction);
+			});
+
+		return actionableDynamicQuery;
 	}
 
 	@Reference
@@ -91,9 +137,12 @@ public class DDMFormInstanceRecordUADAnonymizer
 					ddmFormInstanceRecordVersion.setUserName(
 						anonymousUser.getFullName());
 				}
-				
-				if (ddmFormInstanceRecordVersion.getStatusByUserId() == userId) {
-					ddmFormInstanceRecordVersion.setStatusByUserId(anonymousUser.getUserId());
+
+				if (ddmFormInstanceRecordVersion.getStatusByUserId() ==
+						userId) {
+
+					ddmFormInstanceRecordVersion.setStatusByUserId(
+						anonymousUser.getUserId());
 
 					ddmFormInstanceRecordVersion.setStatusByUserName(
 						anonymousUser.getFullName());

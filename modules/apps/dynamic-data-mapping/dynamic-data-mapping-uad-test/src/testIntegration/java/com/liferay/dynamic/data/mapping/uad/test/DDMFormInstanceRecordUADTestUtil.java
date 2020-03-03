@@ -14,9 +14,6 @@
 
 package com.liferay.dynamic.data.mapping.uad.test;
 
-import java.util.Locale;
-import java.util.Map;
-
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
@@ -41,18 +38,22 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
+import java.util.Locale;
+import java.util.Map;
+
 /**
  * @author Gabriel Ibson
  */
 public class DDMFormInstanceRecordUADTestUtil {
-	
+
 	public static DDMFormInstanceRecord addDDMFormInstanceRecord(
-			DDMFormInstanceRecordLocalService ddmFormInstanceRecordLocalService, long userId, Group group)
+			DDMFormInstanceRecordLocalService ddmFormInstanceRecordLocalService,
+			long userId, Group group)
 		throws Exception {
-		
+
 		ServiceContext serviceContext =
-				ServiceContextTestUtil.getServiceContext();
-		
+			ServiceContextTestUtil.getServiceContext();
+
 		DDMForm ddmForm = new DDMForm();
 
 		ddmForm.setDefaultLocale(LocaleUtil.US);
@@ -61,74 +62,76 @@ public class DDMFormInstanceRecordUADTestUtil {
 		DDMFormField ddmFormField = new DDMFormField("fieldName", "text");
 
 		ddmForm.addDDMFormField(ddmFormField);
-		
-		DDMFormValues settingsDDMFormValues =
-				DDMFormValuesTestUtil.createDDMFormValues(ddmForm);
 
-		DDMFormInstance ddmFormInstance =_addFormInstance(ddmForm, group, settingsDDMFormValues, serviceContext);
+		DDMFormValues settingsDDMFormValues =
+			DDMFormValuesTestUtil.createDDMFormValues(ddmForm);
+
+		DDMFormInstance ddmFormInstance = _addFormInstance(
+			ddmForm, group, settingsDDMFormValues, serviceContext);
 
 		return ddmFormInstanceRecordLocalService.addFormInstanceRecord(
-				userId, group.getGroupId(), ddmFormInstance.getFormInstanceId(), 
-				settingsDDMFormValues, serviceContext);
+			userId, group.getGroupId(), ddmFormInstance.getFormInstanceId(),
+			settingsDDMFormValues, serviceContext);
 	}
 
-	public static DDMFormInstanceRecord 
-		addDDMFormInstanceRecordWithStatusByUserId(
-			DDMFormInstanceRecordLocalService ddmFormInstanceRecordLocalService,
-				long userId, long statusByUserId, Group group) 
-						throws Exception {
-		DDMFormInstanceRecord ddmFormInstanceRecord = 
-				addDDMFormInstanceRecord(
-						ddmFormInstanceRecordLocalService, userId, group);
+	public static DDMFormInstanceRecord
+			addDDMFormInstanceRecordWithStatusByUserId(
+				DDMFormInstanceRecordLocalService
+					ddmFormInstanceRecordLocalService,
+				long userId, long statusByUserId, Group group)
+		throws Exception {
+
+		DDMFormInstanceRecord ddmFormInstanceRecord = addDDMFormInstanceRecord(
+			ddmFormInstanceRecordLocalService, userId, group);
 
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(
 				TestPropsValues.getGroupId());
-		
-		DDMFormInstanceRecordVersion ddmFormInstanceRecordVersion = 
-				ddmFormInstanceRecord.getFormInstanceRecordVersion();
+
+		DDMFormInstanceRecordVersion ddmFormInstanceRecordVersion =
+			ddmFormInstanceRecord.getFormInstanceRecordVersion();
 
 		ddmFormInstanceRecord = ddmFormInstanceRecordLocalService.updateStatus(
-			statusByUserId, 
+			statusByUserId,
 			ddmFormInstanceRecordVersion.getFormInstanceRecordVersionId(),
 			WorkflowConstants.STATUS_APPROVED, serviceContext);
 
 		return ddmFormInstanceRecord;
 	}
-	
+
 	private static DDMFormInstance _addFormInstance(
-			DDMForm ddmForm, Group group, DDMFormValues settingsDDMFormValues,
-				ServiceContext serviceContext) {
-		
+		DDMForm ddmForm, Group group, DDMFormValues settingsDDMFormValues,
+		ServiceContext serviceContext) {
+
 		try {
-			
 			Map<Locale, String> nameMap = HashMapBuilder.put(
-					LocaleUtil.US, RandomTestUtil.randomString()
-					).build();
-			
+				LocaleUtil.US, RandomTestUtil.randomString()
+			).build();
+
 			Map<Locale, String> descriptionMap = HashMapBuilder.put(
-					LocaleUtil.US, RandomTestUtil.randomString()
-					).build();
-			
+				LocaleUtil.US, RandomTestUtil.randomString()
+			).build();
+
 			DDMStructureTestHelper ddmStructureTestHelper =
-					new DDMStructureTestHelper(
-							PortalUtil.getClassNameId(DDMFormInstance.class), group);
-			
+				new DDMStructureTestHelper(
+					PortalUtil.getClassNameId(DDMFormInstance.class), group);
+
 			DDMStructure ddmStructure = ddmStructureTestHelper.addStructure(
-					ddmForm, StorageType.JSON.toString());
-			
-			
+				ddmForm, StorageType.JSON.toString());
+
 			return DDMFormInstanceLocalServiceUtil.addFormInstance(
-					TestPropsValues.getUserId(), group.getGroupId(),
-					ddmStructure.getStructureId(), nameMap, descriptionMap,
-					settingsDDMFormValues, serviceContext);
-		}catch(Exception exception) {
+				TestPropsValues.getUserId(), group.getGroupId(),
+				ddmStructure.getStructureId(), nameMap, descriptionMap,
+				settingsDDMFormValues, serviceContext);
+		}
+		catch (Exception exception) {
 			_log.error(exception, exception);
 		}
-		
+
 		return null;
 	}
-	
+
 	private static final Log _log = LogFactoryUtil.getLog(
-			DDMFormInstanceRecordUADTestUtil.class);
+		DDMFormInstanceRecordUADTestUtil.class);
+
 }

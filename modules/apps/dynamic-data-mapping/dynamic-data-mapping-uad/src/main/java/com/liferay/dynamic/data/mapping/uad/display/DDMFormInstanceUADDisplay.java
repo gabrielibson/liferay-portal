@@ -16,20 +16,27 @@ package com.liferay.dynamic.data.mapping.uad.display;
 
 import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord;
-import com.liferay.dynamic.data.mapping.uad.util.DDMFormInstanceRecordUADHelper;
+import com.liferay.dynamic.data.mapping.service.DDMFormInstanceRecordLocalService;
+import com.liferay.dynamic.data.mapping.uad.constants.DDMUADConstants;
+import com.liferay.dynamic.data.mapping.uad.util.DDMUADHelper;
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Property;
+import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.user.associated.data.display.UADDisplay;
 
 import java.io.Serializable;
 
 import java.util.Locale;
+import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-
-import org.w3c.dom.Document;
 
 /**
  * @author Brian Wing Shun Chan
@@ -41,15 +48,20 @@ import org.w3c.dom.Document;
 public class DDMFormInstanceUADDisplay extends BaseDDMFormInstanceUADDisplay {
 
 	@Override
-	public String getName(DDMFormInstance ddmFormInstance, Locale locale) {
-		Document document = _ddmFormInstanceRecordHelper.toXMLDocument(
-			ddmFormInstance.getName());
+	public Map<String, Object> getFieldValues(
+		DDMFormInstance ddmFormInstance, String[] fieldNames, Locale locale) {
 
-		return document.getFirstChild(
-		).getChildNodes(
-		).item(
-			0
-		).getTextContent();
+		Map<String, Object> fieldValues = super.getFieldValues(
+			ddmFormInstance, fieldNames, locale);
+
+		_ddmUADHelper.formatCreateDateIfExist(fieldValues);
+
+		return fieldValues;
+	}
+
+	@Override
+	public String getName(DDMFormInstance ddmFormInstance, Locale locale) {
+		return _ddmUADHelper.getFormInstanceFormattedName(ddmFormInstance);
 	}
 
 	@Override
@@ -59,7 +71,7 @@ public class DDMFormInstanceUADDisplay extends BaseDDMFormInstanceUADDisplay {
 
 	@Override
 	public Serializable getParentContainerId(DDMFormInstance ddmFormInstance) {
-		return 0;
+		return DDMUADConstants.DEFAULT_PARENT_ID;
 	}
 
 	@Override
@@ -67,20 +79,20 @@ public class DDMFormInstanceUADDisplay extends BaseDDMFormInstanceUADDisplay {
 		Class parentContainerClass, Serializable parentContainerId,
 		Object childObject) {
 
-		if ((long)parentContainerId == -1) {
-			return null;
-		}
-
-		try {
-			if (childObject instanceof DDMFormInstanceRecord) {
+		if (childObject instanceof DDMFormInstanceRecord) {
+			try {
 				DDMFormInstanceRecord ddmFormInstanceRecord =
 					(DDMFormInstanceRecord)childObject;
 
-				return ddmFormInstanceRecord.getFormInstance();
+				if ((long)parentContainerId ==
+						DDMUADConstants.DEFAULT_PARENT_ID) {
+
+					return ddmFormInstanceRecord.getFormInstance();
+				}
 			}
-		}
-		catch (PortalException e) {
-			_log.error(e, e);
+			catch (PortalException portalException) {
+				_log.error(portalException, portalException);
+			}
 		}
 
 		return null;
@@ -95,10 +107,47 @@ public class DDMFormInstanceUADDisplay extends BaseDDMFormInstanceUADDisplay {
 		return false;
 	}
 
+	@Override
+	protected DynamicQuery getSearchDynamicQuery(
+		long userId, long[] groupIds, String keywords, String orderByField,
+		String orderByType) {
+
+		DynamicQuery dynamicQuery = _ddmUADHelper.createFormInstanceQuery(
+			keywords, getSearchableFields(), orderByField, orderByType);
+
+		DynamicQuery dynamicSubquery =
+			_ddmFormInstanceRecordLocalService.dynamicQuery();
+
+		dynamicSubquery.setProjection(
+			ProjectionFactoryUtil.property("formInstanceId"));
+
+		Property userIdProperty = PropertyFactoryUtil.forName("userId");
+		Property versionUserIdProperty = PropertyFactoryUtil.forName(
+			"versionUserId");
+
+		dynamicSubquery.add(
+			RestrictionsFactoryUtil.or(
+				userIdProperty.eq(userId), versionUserIdProperty.eq(userId)));
+
+		if (isSiteScoped() && ArrayUtil.isNotEmpty(groupIds)) {
+			_ddmUADHelper.addGroupIdRestriction(dynamicQuery, groupIds);
+			_ddmUADHelper.addGroupIdRestriction(dynamicSubquery, groupIds);
+		}
+
+		Property formInstanceIdProperty = PropertyFactoryUtil.forName(
+			"formInstanceId");
+
+		return dynamicQuery.add(formInstanceIdProperty.in(dynamicSubquery));
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		DDMFormInstanceUADDisplay.class);
 
 	@Reference
-	private DDMFormInstanceRecordUADHelper _ddmFormInstanceRecordHelper;
+	private DDMFormInstanceRecordLocalService
+		_ddmFormInstanceRecordLocalService;
+
+	@Reference
+	private DDMUADHelper _ddmUADHelper;
 
 }
