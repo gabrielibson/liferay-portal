@@ -134,9 +134,9 @@ public class DDMFormInstanceUADDisplay extends BaseDDMFormInstanceUADDisplay {
 			_ddmUADHelper.addGroupIdRestriction(dynamicSubquery, groupIds);
 		}
 
-		Property nameProperty = PropertyFactoryUtil.forName("formInstanceId");
+		Property formInstanceIdProperty = PropertyFactoryUtil.forName("formInstanceId");
 
-		return dynamicQuery.add(nameProperty.in(dynamicSubquery));
+		return dynamicQuery.add(formInstanceIdProperty.in(dynamicSubquery));
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
