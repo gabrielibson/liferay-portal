@@ -21,7 +21,6 @@ import com.liferay.dynamic.data.mapping.service.DDMFormInstanceLocalService;
 import com.liferay.dynamic.data.mapping.uad.util.DDMFormInstanceRecordUADUserCacheHelper;
 import com.liferay.dynamic.data.mapping.uad.util.DDMUADHelper;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -62,11 +61,6 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class DDMFormInstanceRecordUADDisplay
 	extends BaseDDMFormInstanceRecordUADDisplay {
-
-	@Override
-	public long count(long userId) {
-		return 0;
-	}
 
 	@Override
 	public String getEditURL(
@@ -227,16 +221,6 @@ public class DDMFormInstanceRecordUADDisplay
 		).collect(
 			Collectors.toList()
 		);
-	}
-
-	@Override
-	public long searchCount(long userId, long[] groupIds, String keywords) {
-		return 0;
-	}
-
-	@Override
-	protected long doCount(DynamicQuery dynamicQuery) {
-		return 0;
 	}
 
 	protected ThemeDisplay getThemeDisplay(

@@ -144,6 +144,6 @@ public class DDMFormInstanceRecordUADAnonymizerTest
 	private Group _group;
 
 	@Inject(filter = "component.name=*.DDMFormInstanceRecordUADAnonymizer")
-	private UADAnonymizer _uadAnonymizer;
+	private UADAnonymizer<DDMFormInstanceRecord> _uadAnonymizer;
 
 }
