@@ -27,7 +27,6 @@ import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.user.associated.data.display.UADDisplay;
 
 import java.io.Serializable;
@@ -108,12 +107,8 @@ public class DDMFormInstanceUADDisplay extends BaseDDMFormInstanceUADDisplay {
 	}
 
 	@Override
-	protected DynamicQuery getSearchDynamicQuery(
-		long userId, long[] groupIds, String keywords, String orderByField,
-		String orderByType) {
-
-		DynamicQuery dynamicQuery = _ddmUADHelper.createFormInstanceQuery(
-			keywords, getSearchableFields(), orderByField, orderByType);
+	protected DynamicQuery getDynamicQuery(long userId) {
+		DynamicQuery dynamicQuery = ddmFormInstanceLocalService.dynamicQuery();
 
 		DynamicQuery dynamicSubquery =
 			_ddmFormInstanceRecordLocalService.dynamicQuery();
@@ -129,12 +124,8 @@ public class DDMFormInstanceUADDisplay extends BaseDDMFormInstanceUADDisplay {
 			RestrictionsFactoryUtil.or(
 				userIdProperty.eq(userId), versionUserIdProperty.eq(userId)));
 
-		if (isSiteScoped() && ArrayUtil.isNotEmpty(groupIds)) {
-			_ddmUADHelper.addGroupIdRestriction(dynamicQuery, groupIds);
-			_ddmUADHelper.addGroupIdRestriction(dynamicSubquery, groupIds);
-		}
-
-		Property formInstanceIdProperty = PropertyFactoryUtil.forName("formInstanceId");
+		Property formInstanceIdProperty = PropertyFactoryUtil.forName(
+			"formInstanceId");
 
 		return dynamicQuery.add(formInstanceIdProperty.in(dynamicSubquery));
 	}

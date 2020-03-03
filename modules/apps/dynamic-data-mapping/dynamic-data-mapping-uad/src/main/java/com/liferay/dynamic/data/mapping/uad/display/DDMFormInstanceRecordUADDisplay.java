@@ -14,19 +14,6 @@
 
 package com.liferay.dynamic.data.mapping.uad.display;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-
 import com.liferay.dynamic.data.mapping.constants.DDMPortletKeys;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord;
@@ -34,7 +21,6 @@ import com.liferay.dynamic.data.mapping.service.DDMFormInstanceLocalService;
 import com.liferay.dynamic.data.mapping.uad.util.DDMFormInstanceRecordUADUserCacheHelper;
 import com.liferay.dynamic.data.mapping.uad.util.DDMUADHelper;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -52,6 +38,20 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.user.associated.data.display.UADDisplay;
 
+import java.io.Serializable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Brian Wing Shun Chan
  */
@@ -61,11 +61,6 @@ import com.liferay.user.associated.data.display.UADDisplay;
 )
 public class DDMFormInstanceRecordUADDisplay
 	extends BaseDDMFormInstanceRecordUADDisplay {
-
-	@Override
-	public long count(long userId) {
-		return 0;
-	}
 
 	@Override
 	public String getEditURL(
@@ -101,7 +96,12 @@ public class DDMFormInstanceRecordUADDisplay
 			new String[] {_portal.getCurrentURL(httpServletRequest)}
 		).put(
 			portletNamespace.concat("title"),
-			new String[] {StringBundler.concat(ddmFormInstanceRecord.getUserName(), " - ", LanguageUtil.get(httpServletRequest, "personal-data-erasure")) }
+			new String[] {
+				StringBundler.concat(
+					ddmFormInstanceRecord.getUserName(), " - ",
+					LanguageUtil.get(
+						httpServletRequest, "personal-data-erasure"))
+			}
 		).build();
 
 		return _portal.getSiteAdminURL(
@@ -199,7 +199,7 @@ public class DDMFormInstanceRecordUADDisplay
 				userId, groupIds, StringPool.BLANK, orderByField, orderByType,
 				start, end));
 
-		if(Validator.isNull(keywords)) {
+		if (Validator.isNull(keywords)) {
 			return ddmFormInstanceRecords;
 		}
 
@@ -207,7 +207,6 @@ public class DDMFormInstanceRecordUADDisplay
 
 		Stream<DDMFormInstanceRecord> ddmFormInstanceRecordsStream =
 			ddmFormInstanceRecords.stream();
-		
 
 		return ddmFormInstanceRecordsStream.filter(
 			ddmFormInstanceRecord -> {
@@ -222,16 +221,6 @@ public class DDMFormInstanceRecordUADDisplay
 		).collect(
 			Collectors.toList()
 		);
-	}
-
-	@Override
-	public long searchCount(long userId, long[] groupIds, String keywords) {
-		return 0;
-	}
-
-	@Override
-	protected long doCount(DynamicQuery dynamicQuery) {
-		return 0;
 	}
 
 	protected ThemeDisplay getThemeDisplay(
