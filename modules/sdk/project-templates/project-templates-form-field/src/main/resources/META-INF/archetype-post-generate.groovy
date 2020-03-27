@@ -42,7 +42,7 @@ if (liferayVersion.startsWith("7.2")) {
 
 	String directory = folders.length > 0 ? "" : artifactId
 
-	for(String folder : folders) {
+	for (String folder : folders) {
 		directory += folder + "/"
 	}
 

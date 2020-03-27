@@ -7,7 +7,6 @@ import templates from './${artifactId}.soy.js';
 #end
 import Component from 'metal-component';
 import Soy from 'metal-soy';
-
 #if (!${liferayVersion.startsWith("7.2")})
 import templates from './${artifactId}.soy';
 
@@ -27,6 +26,7 @@ if (!window.DDM${className}) {
 
 window.DDM${className}.render = ${className};
 #else
+
 /**
  * ${className} Component
  */

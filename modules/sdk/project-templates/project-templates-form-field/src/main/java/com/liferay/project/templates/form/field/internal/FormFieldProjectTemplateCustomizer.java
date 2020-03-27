@@ -14,6 +14,7 @@
 
 package com.liferay.project.templates.form.field.internal;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.project.templates.extensions.ProjectTemplateCustomizer;
 import com.liferay.project.templates.extensions.ProjectTemplatesArgs;
 
@@ -46,12 +47,6 @@ public class FormFieldProjectTemplateCustomizer
 
 		String liferayVersion = projectTemplatesArgs.getLiferayVersion();
 
-		Path destinationDirPath = destinationDir.toPath();
-
-		String name = projectTemplatesArgs.getName();
-
-		Path projectDirPath = destinationDirPath.resolve(name);
-
 		List<String> fileNames = new ArrayList<>();
 
 		if (liferayVersion.startsWith("7.0")) {
@@ -69,7 +64,7 @@ public class FormFieldProjectTemplateCustomizer
 
 			String[] folders = name.split("-");
 
-			String directory = (folders.length > 0) ? "" : name;
+			String directory = (folders.length > 0) ? StringPool.BLANK : name;
 
 			for (String folder : folders) {
 				directory += folder + "/";
@@ -86,6 +81,12 @@ public class FormFieldProjectTemplateCustomizer
 				"src/main/resources/META-INF/resources/" + name +
 					"Register.js");
 		}
+
+		Path destinationDirPath = destinationDir.toPath();
+
+		String name = projectTemplatesArgs.getName();
+
+		Path projectDirPath = destinationDirPath.resolve(name);
 
 		for (String fileName : fileNames) {
 			ProjectTemplateCustomizer.deleteFileInPath(
